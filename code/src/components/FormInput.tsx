@@ -8,7 +8,7 @@ type Props = {
   placeHolder: string;
   label: string;
   name: string;
-  Desc :string | null;
+  Desc :any;
 };
 function FormInput({ type, placeHolder, label, name ,Desc= null}: Props) {
   return (

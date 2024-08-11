@@ -41,6 +41,7 @@ function Login() {
           />
 
           <FormInput
+            Desc={null}
             type={"password"}
             label={"Password"}
             placeHolder={"Enter Password"}

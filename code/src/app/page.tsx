@@ -38,5 +38,18 @@ export default async function Home() {
         </div>
       );
     }
+  }else{
+
+    return (
+      <div className="">
+        {/* Start of Navigation */}
+        <AppBar />
+        {/* End of Navigation */}
+
+        {/* Start of ClientSideDesign */}
+        <AuthDesign />
+        {/* End of ClientSideDesign */}
+      </div>
+    );
   }
 }

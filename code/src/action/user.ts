@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/lib/db";
-import { signIn } from "../../auth";
+import { auth, signIn } from "../../auth";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 export const loginSignup = async (formData: FormData, isLogin: boolean) => {
@@ -62,3 +62,97 @@ export const updateUser = async (
   revalidatePath(` ${isAdmin ? "/dashboard" : "/"} `);
   return product;
 };
+
+
+
+// update user role
+export const updateUserRole = async (
+    formData: FormData,
+    isAdmin: boolean,
+    data: any
+  ) => {
+    const name = formData.get("name") as string;
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+  
+    if (!name || !email || !password) {
+      return { error: "All fields are required" };
+    }
+    const checkEmail = await db.user.findUnique({ where: { email } });
+    if (!checkEmail) return { error: "User not found" };
+  
+    let user;
+    try {
+      user = await db.user.update({
+        where: { id: data?.id },
+        data: { name, email, password, isAdmin },
+      });
+      console.log(user, "user");
+      if (!user) {
+        return { error: "User not udpated" };
+      }
+    } catch (error) {
+      return { error: "User not udpated" };
+    }
+  
+    revalidatePath(`/dashboard/clients`);
+    return user;
+  };
+  
+  // add/update inventory
+  
+  export const addUpdateInventory = async (formData: FormData, data: any) => {
+    const session = await auth();
+  
+    const name = formData.get("name") as string;
+    const description = formData.get("description") as string;
+    const getCost = formData.get("cost") as string;
+    const cost = Number(getCost);
+  
+    const user = await db.user.findUnique({
+      where: { email: session?.user?.email! },
+    });
+  
+    if (!name || !description || !cost) {
+      return { error: "All fields are required" };
+    }
+  
+    let inventory;
+    try {
+      if (data?.id) {
+        inventory = await db.product.update({
+          where: { id: data?.id },
+          data: { name, desc, cost, userId: user?.id },
+        });
+      } else {
+        inventory = await db.product.create({
+          data: { name, desc, cost, userId: user?.id },
+        });
+      }
+      if (!inventory) {
+        return { error: "failed to create inventory" };
+      }
+    } catch (error) {
+      return { error: "failed to create inventory" };
+    }
+  
+    revalidatePath(`/dashboard`);
+    return inventory;
+  };
+  
+  // delete inventory
+  
+  export const DeleteInventory = async (id: string) => {
+    try {
+      const result = await db.product.delete({
+        where: { id },
+      });
+      revalidatePath("/dashboard");
+      if (!result) {
+        return { error: "product not deleted" };
+      }
+    } catch (error) {
+      return { error: "product not deleted" };
+    }
+  };
+  
